@@ -38,7 +38,9 @@ This means that .tfstate files for components with secrets, should be encrypted 
 
 ##### Usage
 
-- `make decrypt target="terraform/components/techlete/terraform.tfstate"`
-- `make encrypt target="terraform/components/techlete/terraform.tfstate"`
+- `make decrypt target="bootstrap" file="terraform.tfstate"`
+- `make encrypt target="bootstrap" file="terraform.tfstate"`
 
-Above is an example of encrypting and decrypting the `techlete` component
+Above is an example of encrypting and decrypting the `bootstrap` component and the output `terraform.tfstate` file.
+
+Should you wish to encrypt another file, such as locals.tf for storing constants that may be sensetive or non-public, then just change the `file=..."` parameter to the make encrypt / decrypt.
