@@ -43,3 +43,13 @@ resource "aws_ses_active_receipt_rule_set" "set-ruleset-as-primary-active" {
   rule_set_name = "ses-production-ruleset"
   depends_on            = [aws_ses_receipt_rule_set.ses-production-ruleset]
 }
+
+module "core_domain_plus_wildcard_tls" {
+  source                = "../../modules/AwsLetsEncryptToAcm/"
+  zone_id               = local.route53_base_zone_id
+  domain                = local.domain
+  acme_email            = "tls@${local.domain}"
+  aws_region            = var.aws_region
+  aws_access_key_id     = var.aws_access_key_id
+  aws_secret_access_key = var.aws_secret_access_key
+}
