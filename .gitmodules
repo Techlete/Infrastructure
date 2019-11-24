@@ -1,0 +1,4 @@
+[submodule "terraform/modules/AwsSESToBucket"]
+	path = terraform/modules/AwsSESToBucket
+	url = https://github.com/Lewiscowles1986/terraform-aws-ses-domain.git
+	branch = custom-spf
