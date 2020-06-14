@@ -19,7 +19,7 @@ variable "tags" {
 variable "enable_versioning" {
   type        = bool
   description = "Do we wish to version this resource or not?"
-  default     = false
+  default     = true
 }
 
 variable "create_user" {
