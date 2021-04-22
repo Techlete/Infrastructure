@@ -60,7 +60,7 @@ module "uk_domain_plus_wildcard_tls" {
   source                = "../../modules/AwsLetsEncryptToAcm/"
   zone_id               = local.route53_uk_zone_id
   domain                = local.domain_uk
-  acme_email            = "tls@${local.domain_uk}"
+  acme_email            = "tls@${local.domain_co_uk}"
   aws_region            = var.aws_region
   aws_access_key_id     = var.aws_access_key_id
   aws_secret_access_key = var.aws_secret_access_key
