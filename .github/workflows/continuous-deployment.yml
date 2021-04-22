@@ -1,0 +1,69 @@
+# This is a basic workflow to help you get started with Actions
+name: Deploy
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    name: Continuously Deploy Infrastructure as Code
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - name: Checkout repo
+      uses: actions/checkout@v2
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v1
+      with:
+        terraform_version: 0.12.16
+
+    - name: init component [bootstrap]
+      run: terraform init
+      working-directory: ./terraform/components/bootstrap
+
+    - name: Decrypt state [bootstrap]
+      run: DECRYPT_PASSWD="${{ secrets.ENCRYPTION_SECRET }}" make decrypt target=bootstrap file=terraform.tfstate
+
+    - name: Plan changes [bootstrap]
+      run: |
+        terraform plan -no-color \
+         --var 'aws_access_key_id=${{ secrets.AWS_IAM_IAC_ACCESS_KEY }}' \
+         --var 'aws_secret_access_key=${{ secrets.AWS_IAM_IAC_SECRET }}' \
+         --var 'aws_region=${{ secrets.AWS_REGION }}'
+      working-directory: ./terraform/components/bootstrap
+
+    - name: Deploy changes [bootstrap]
+      run: |
+        terraform apply -auto-approve \
+         -no-color \
+         --var 'aws_access_key_id=${{ secrets.AWS_IAM_IAC_ACCESS_KEY }}' \
+         --var 'aws_secret_access_key=${{ secrets.AWS_IAM_IAC_SECRET }}' \
+         --var 'aws_region=${{ secrets.AWS_REGION }}'
+      working-directory: ./terraform/components/bootstrap
+      if: github.ref == 'refs/heads/main'
+
+    - name: Encrypt state [bootstrap]
+      run: DECRYPT_PASSWD="${{ secrets.NEW_ENCRYPTION_SECRET }}" make encrypt target=bootstrap file=terraform.tfstate
+      if: github.ref == 'refs/heads/main'
+
+    - name: Update repo with state [bootstrap]
+      uses: actions-js/push@master
+      with:
+        message: 'State deploy for bootstrap'
+        author_email: 'deploy+gha@techlete.co.uk'
+        author_name: 'Github Actions Automation [deployment]'
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+
+    - name: Remove tfstate [bootstrap]
+      run: rm -rf terraform.tfstate
+      working-directory: ./terraform/components/bootstrap
