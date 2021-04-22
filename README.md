@@ -1,5 +1,8 @@
 # Techlete Infrastructure
 
+[![CI](https://github.com/Techlete/Infrastructure/actions/workflows/checkov.yml/badge.svg)](https://github.com/Techlete/Infrastructure/actions/workflows/checkov.yml)
+[![Deploy](https://github.com/Techlete/Infrastructure/actions/workflows/continuous-deployment.yml/badge.svg)](https://github.com/Techlete/Infrastructure/actions/workflows/continuous-deployment.yml)
+
 This repo is for Infrastructure documentation, including an operator manual & IaC.
 
 ## Git
