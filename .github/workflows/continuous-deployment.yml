@@ -67,3 +67,45 @@ jobs:
     - name: Remove tfstate [bootstrap]
       run: rm -rf terraform.tfstate
       working-directory: ./terraform/components/bootstrap
+
+    - name: init component [stage1]
+      run: terraform init
+      working-directory: ./terraform/components/stage1
+
+    - name: Decrypt state [stage1]
+      run: DECRYPT_PASSWD="${{ secrets.ENCRYPTION_SECRET }}" make decrypt target=stage1 file=terraform.tfstate
+
+    - name: Plan changes [stage1]
+      run: |
+        terraform plan -no-color \
+         --var 'aws_access_key_id=${{ secrets.AWS_IAM_IAC_ACCESS_KEY }}' \
+         --var 'aws_secret_access_key=${{ secrets.AWS_IAM_IAC_SECRET }}' \
+         --var 'aws_region=${{ secrets.AWS_REGION }}'
+      working-directory: ./terraform/components/stage1
+
+    - name: Deploy changes [stage1]
+      run: |
+        terraform apply -auto-approve \
+         -no-color \
+         --var 'aws_access_key_id=${{ secrets.AWS_IAM_IAC_ACCESS_KEY }}' \
+         --var 'aws_secret_access_key=${{ secrets.AWS_IAM_IAC_SECRET }}' \
+         --var 'aws_region=${{ secrets.AWS_REGION }}'
+      working-directory: ./terraform/components/stage1
+      if: github.ref == 'refs/heads/main'
+
+    - name: Encrypt state [stage1]
+      run: DECRYPT_PASSWD="${{ secrets.NEW_ENCRYPTION_SECRET }}" make encrypt target=stage1 file=terraform.tfstate
+      if: github.ref == 'refs/heads/main'
+
+    - name: Update repo with state [stage1]
+      uses: actions-js/push@master
+      with:
+        message: 'State deploy for stage1'
+        author_email: 'deploy+gha@techlete.co.uk'
+        author_name: 'Github Actions Automation [deployment]'
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: main
+
+    - name: Remove tfstate [stage1]
+      run: rm -rf terraform.tfstate
+      working-directory: ./terraform/components/stage1
